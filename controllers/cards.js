@@ -1,8 +1,9 @@
+const errors = require('../utils/errors');
 const handleError = require('../utils/handle-error');
 const Card = require('../models/card');
 
 const sendNotFoundError = (res) => {
-  res.status(404).send({ message: 'Карточка не найдена' });
+  res.status(errors.NOT_FOUND).send({ message: 'Карточка не найдена' });
 };
 
 module.exports.getCards = (req, res) => {
@@ -25,7 +26,7 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card
-    .remove({ _id: req.params.cardId })
+    .findByIdAndRemove(req.params.cardId)
     .then((deletedCard) => {
       if (deletedCard.deletedCount === 0) {
         sendNotFoundError(res);

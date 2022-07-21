@@ -1,8 +1,9 @@
+const errors = require('../utils/errors');
 const handleError = require('../utils/handle-error');
 const User = require('../models/user');
 
 const sendNotFoundError = (res) => {
-  res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+  res.status(errors.NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
 };
 
 module.exports.getUsers = (req, res) => {
