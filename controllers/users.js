@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+const isEmail = require('validator/lib/isEmail');
 const errors = require('../utils/errors');
 const handleError = require('../utils/handle-error');
 const User = require('../models/user');
@@ -25,9 +27,34 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+
+  if (!email || !password) {
+    res.status(errors.BAD_REQUEST).send({ message: 'Поля email и password обязательны' });
+    return;
+  }
+
+  if (password.length < 8) {
+    res.status(errors.BAD_REQUEST).send({ message: 'Пароль должен быть от 8-ми символов' });
+    return;
+  }
+
+  if (!isEmail(email)) {
+    res.status(errors.BAD_REQUEST).send({ message: 'Некорректный email' });
+    return;
+  }
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => {
+      const newUser = user.toObject();
+      delete newUser.password;
+      res.send(user);
+    })
     .catch((err) => handleError(err, res));
 };
 
