@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const isEmail = require('validator/lib/isEmail');
 const errors = require('../utils/errors');
 const handleError = require('../utils/handle-error');
@@ -53,7 +54,35 @@ module.exports.createUser = (req, res) => {
     .then((user) => {
       const newUser = user.toObject();
       delete newUser.password;
-      res.send(user);
+      res.send(newUser);
+    })
+    .catch((err) => handleError(err, res));
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  let userId;
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        return false;
+      }
+      userId = user._id;
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        res.status(errors.INCORRECT_CREDENTIALS).send({ message: 'Неправильные почта или пароль' });
+        return;
+      }
+      const { NODE_ENV, JWT_SECRET } = process.env;
+      const token = jwt.sign(
+        { _id: userId },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
+      );
+      res.send({ token });
     })
     .catch((err) => handleError(err, res));
 };
