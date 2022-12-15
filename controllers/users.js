@@ -73,16 +73,27 @@ module.exports.login = (req, res) => {
     })
     .then((matched) => {
       if (!matched) {
-        res.status(errors.INCORRECT_CREDENTIALS).send({ message: 'Неправильные почта или пароль' });
+        res
+          .status(errors.INCORRECT_CREDENTIALS)
+          .send({ message: 'Неправильные почта или пароль' });
         return;
       }
-      const { NODE_ENV, JWT_SECRET } = process.env;
+      const { JWT_SECRET } = process.env;
+      const payload = { _id: userId };
       const token = jwt.sign(
-        { _id: userId },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        payload,
+        JWT_SECRET,
         { expiresIn: '7d' },
       );
       res.send({ token });
+    })
+    .catch((err) => handleError(err, res));
+};
+
+module.exports.getUserInfo = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      res.send({ data: user });
     })
     .catch((err) => handleError(err, res));
 };

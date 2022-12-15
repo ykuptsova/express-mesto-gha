@@ -25,14 +25,25 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card
-    .findByIdAndRemove(req.params.cardId)
-    .then((deletedCard) => {
-      if (deletedCard.deletedCount === 0) {
-        sendNotFoundError(res);
-      } else {
-        res.send({ data: deletedCard });
+  Card.findOne({ _id: req.params.cardId })
+    .then((card) => {
+      if (!card) {
+        return sendNotFoundError(res);
       }
+      if (card.owner.toString() !== req.user._id) {
+        return res
+          .status(errors.UNAUTHORIZED)
+          .send({ message: 'Необходима авторизация' });
+      }
+      return Card
+        .findByIdAndRemove(req.params.cardId)
+        .then((deletedCard) => {
+          if (deletedCard.deletedCount === 0) {
+            sendNotFoundError(res);
+          } else {
+            res.send({ data: deletedCard });
+          }
+        });
     })
     .catch((err) => handleError(err, res));
 };
