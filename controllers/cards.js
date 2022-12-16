@@ -1,18 +1,17 @@
 const errors = require('../utils/errors');
-const handleError = require('../utils/handle-error');
 const Card = require('../models/card');
 
 const sendNotFoundError = (res) => {
   res.status(errors.NOT_FOUND).send({ message: 'Карточка не найдена' });
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const createdAt = Date.now();
   const owner = req.user._id;
@@ -21,10 +20,10 @@ module.exports.createCard = (req, res) => {
       name, link, owner, createdAt,
     })
     .then((user) => res.send({ data: user }))
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findOne({ _id: req.params.cardId })
     .then((card) => {
       if (!card) {
@@ -45,10 +44,10 @@ module.exports.deleteCard = (req, res) => {
           }
         });
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card
     .findByIdAndUpdate(
       req.params.cardId,
@@ -63,10 +62,10 @@ module.exports.likeCard = (req, res) => {
         res.send({ data: card });
       }
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card
     .findByIdAndUpdate(
       req.params.cardId,
@@ -81,5 +80,5 @@ module.exports.dislikeCard = (req, res) => {
         res.send({ data: card });
       }
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };

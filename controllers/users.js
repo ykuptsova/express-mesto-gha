@@ -2,20 +2,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const isEmail = require('validator/lib/isEmail');
 const errors = require('../utils/errors');
-const handleError = require('../utils/handle-error');
 const User = require('../models/user');
 
 const sendNotFoundError = (res) => {
   res.status(errors.NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.find({ _id: req.params.userId })
     .then((user) => {
       if (user.length === 0) {
@@ -24,26 +23,32 @@ module.exports.getUser = (req, res) => {
         res.send({ data: user[0] });
       }
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
 
   if (!email || !password) {
-    res.status(errors.BAD_REQUEST).send({ message: 'Поля email и password обязательны' });
+    res
+      .status(errors.BAD_REQUEST)
+      .send({ message: 'Поля email и password обязательны' });
     return;
   }
 
   if (password.length < 8) {
-    res.status(errors.BAD_REQUEST).send({ message: 'Пароль должен быть от 8-ми символов' });
+    res
+      .status(errors.BAD_REQUEST)
+      .send({ message: 'Пароль должен быть от 8-ми символов' });
     return;
   }
 
   if (!isEmail(email)) {
-    res.status(errors.BAD_REQUEST).send({ message: 'Некорректный email' });
+    res
+      .status(errors.BAD_REQUEST)
+      .send({ message: 'Некорректный email' });
     return;
   }
 
@@ -56,10 +61,10 @@ module.exports.createUser = (req, res) => {
       delete newUser.password;
       res.send(newUser);
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   let userId;
@@ -87,18 +92,18 @@ module.exports.login = (req, res) => {
       );
       res.send({ token });
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.getUserInfo = (req, res) => {
+module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       res.send({ data: user });
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User
     .findByIdAndUpdate(
@@ -113,10 +118,10 @@ module.exports.updateProfile = (req, res) => {
         res.send({ data: user });
       }
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User
     .findByIdAndUpdate(
@@ -131,5 +136,5 @@ module.exports.updateAvatar = (req, res) => {
         res.send({ data: user });
       }
     })
-    .catch((err) => handleError(err, res));
+    .catch(next);
 };

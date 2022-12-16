@@ -1,7 +1,10 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
+const { celebrate, Joi, errors } = require('celebrate');
+const handleError = require('./middlewares/handle-error');
 const { login, createUser } = require('./controllers/users');
+const { LINK } = require('./utils/regex');
 
 // разбираем настройки окружения
 const { PORT = 3000, NODE_ENV } = process.env;
@@ -26,11 +29,36 @@ const app = express();
 app.use(express.json());
 
 // добавляем руты
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+    }),
+  }),
+  login,
+);
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().pattern(LINK),
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+    }),
+  }),
+  createUser,
+);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 app.use('/', require('./routes/not-found'));
+
+// обрабатываем ошибки централизованно
+app.use(errors());
+app.use(handleError);
 
 // поднимаем сервер по порту
 app.listen(PORT, () => {
