@@ -1,20 +1,10 @@
-const errors = require('../utils/errors');
+const { GENERAL_ERROR } = require('../utils/errors');
 
 module.exports = (err, req, res, next) => {
-  if (err) {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
-      res
-        .status(errors.INCCORECT_DATA)
-        .send({ message: 'Переданы некорректные данные' });
-    } else if (err.name === 'MongoServerError' && err.code === 11000) {
-      res
-        .status(errors.INCCORECT_DATA)
-        .send({ message: 'Ресурс с таким ключем уже существует' });
-    } else {
-      res
-        .status(errors.GENERAL_ERROR)
-        .send({ message: 'Произошла ошибка' });
-    }
-  }
+  const statusCode = err.statusCode || GENERAL_ERROR;
+  const message = statusCode === GENERAL_ERROR
+    ? 'Произошла ошибка'
+    : err.message;
+  res.status(statusCode).send({ message });
   next();
 };

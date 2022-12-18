@@ -18,8 +18,6 @@ mongoose.set('strictQuery', true);
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
-  // useCreateIndex: true,
-  // useFindAndModify: false,
 });
 
 // создаем сервер
@@ -62,6 +60,5 @@ app.use(handleError);
 
 // поднимаем сервер по порту
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
 });
