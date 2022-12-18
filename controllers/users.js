@@ -5,6 +5,7 @@ const { CREATED } = require('../utils/status-codes');
 
 const NotFoundError = require('../errors/not-found-error');
 const IncorrectCredentialsError = require('../errors/incorrect-credentials-error');
+const BadRequestError = require('../errors/bad-request-error');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -20,7 +21,13 @@ module.exports.getUser = (req, res, next) => {
       }
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -93,7 +100,13 @@ module.exports.updateProfile = (req, res, next) => {
       }
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -110,5 +123,11 @@ module.exports.updateAvatar = (req, res, next) => {
       }
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
+    });
 };

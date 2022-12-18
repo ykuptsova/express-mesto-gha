@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const RouteNotFoundError = require('../errors/route-not-found-error');
+const NotFoundError = require('../errors/not-found-error');
 
 router.all('*', (req, res, next) => {
-  next(new RouteNotFoundError());
+  next(new NotFoundError());
 });
 
 module.exports = router;
