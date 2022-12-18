@@ -1,7 +1,8 @@
 const Card = require('../models/card');
 
-const CardNotFoundError = require('../errors/card-not-found-error');
-const UnauthorizedError = require('../errors/unauthorized-error');
+const NotFoundError = require('../errors/not-found-error');
+const AccessDeniedError = require('../errors/access-denied-error');
+const { CREATED } = require('../utils/status-codes');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -17,7 +18,7 @@ module.exports.createCard = (req, res, next) => {
     .create({
       name, link, owner,
     })
-    .then((user) => res.status(201).send({ data: user }))
+    .then((user) => res.status(CREATED).send({ data: user }))
     .catch(next);
 };
 
@@ -25,14 +26,15 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findOne({ _id: req.params.cardId })
     .then((card) => {
       if (!card) {
-        throw new CardNotFoundError();
+        throw new NotFoundError();
       }
       if (card.owner.toString() !== req.user._id) {
-        throw new UnauthorizedError();
+        throw new AccessDeniedError();
       }
       return Card
         .findByIdAndRemove(req.params.cardId)
-        .then((deletedCard) => res.send({ data: deletedCard }));
+        .then((deletedCard) => res.send({ data: deletedCard }))
+        .catch(next);
     })
     .catch(next);
 };
@@ -47,7 +49,7 @@ module.exports.likeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        throw new CardNotFoundError();
+        throw new NotFoundError();
       }
       res.send({ data: card });
     })
@@ -65,7 +67,7 @@ module.exports.dislikeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
-        throw new CardNotFoundError();
+        throw new NotFoundError();
       }
       res.send({ data: card });
     })

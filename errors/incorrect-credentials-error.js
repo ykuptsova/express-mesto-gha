@@ -1,4 +1,4 @@
-const { INCORRECT_CREDENTIALS } = require('../utils/errors');
+const { INCORRECT_CREDENTIALS } = require('../utils/status-codes');
 
 class IncorrectCredentialsError extends Error {
   constructor(message) {

@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const { CREATED } = require('../utils/status-codes');
 
-const UserNotFoundError = require('../errors/user-not-found-error');
+const NotFoundError = require('../errors/not-found-error');
 const IncorrectCredentialsError = require('../errors/incorrect-credentials-error');
 
 module.exports.getUsers = (req, res, next) => {
@@ -15,7 +16,7 @@ module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        throw new UserNotFoundError();
+        throw new NotFoundError();
       }
       res.send({ data: user });
     })
@@ -34,7 +35,7 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => {
       const newUser = user.toObject();
       delete newUser.password;
-      res.status(201).send(newUser);
+      res.status(CREATED).send(newUser);
     })
     .catch(next);
 };
@@ -71,7 +72,7 @@ module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new UserNotFoundError();
+        throw new NotFoundError();
       }
       res.send({ data: user });
     })
@@ -88,7 +89,7 @@ module.exports.updateProfile = (req, res, next) => {
     )
     .then((user) => {
       if (!user) {
-        throw new UserNotFoundError();
+        throw new NotFoundError();
       }
       res.send({ data: user });
     })
@@ -105,7 +106,7 @@ module.exports.updateAvatar = (req, res, next) => {
     )
     .then((user) => {
       if (!user) {
-        throw new UserNotFoundError();
+        throw new NotFoundError();
       }
       res.send({ data: user });
     })
