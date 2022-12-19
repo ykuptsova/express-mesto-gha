@@ -6,6 +6,7 @@ const { CREATED } = require('../utils/status-codes');
 const NotFoundError = require('../errors/not-found-error');
 const IncorrectCredentialsError = require('../errors/incorrect-credentials-error');
 const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -44,7 +45,15 @@ module.exports.createUser = (req, res, next) => {
       delete newUser.password;
       res.status(CREATED).send(newUser);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else if (err.code === 11000) {
+        next(new ConflictError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.login = (req, res, next) => {
