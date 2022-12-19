@@ -4,7 +4,7 @@ const User = require('../models/user');
 const { CREATED } = require('../utils/status-codes');
 
 const NotFoundError = require('../errors/not-found-error');
-const IncorrectCredentialsError = require('../errors/incorrect-credentials-error');
+const UnauthorizedError = require('../errors/unauthorized-error');
 const BadRequestError = require('../errors/bad-request-error');
 const ConflictError = require('../errors/conflict-error');
 
@@ -70,7 +70,7 @@ module.exports.login = (req, res, next) => {
     })
     .then((matched) => {
       if (!matched) {
-        throw new IncorrectCredentialsError();
+        throw new UnauthorizedError();
       }
       const { JWT_SECRET } = process.env;
       const payload = { _id: userId };
